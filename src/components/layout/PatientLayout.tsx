@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { path: "/paciente/home", label: "Home", icon: Home },
   { path: "/paciente/diario", label: "Diário", icon: BookOpen },
-  { path: "/paciente/plano", label: "Meu Plano", icon: Utensils },
+  { path: "/paciente/plano", label: "Plano", icon: Utensils },
   { path: "/paciente/evolucao", label: "Evolução", icon: TrendingUp },
   { path: "/paciente/checkins", label: "Check-ins", icon: ClipboardCheck },
   { path: "/paciente/configuracoes", label: "Configurações", icon: Settings },
