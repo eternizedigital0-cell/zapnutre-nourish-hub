@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, BookOpen, Utensils, TrendingUp, ClipboardCheck, FileText, Flame, Wheat, Drumstick, Droplet, TrendingDown } from "lucide-react";
+import { ArrowLeft, BookOpen, Utensils, TrendingUp, ClipboardCheck, FileText, Flame, Wheat, Drumstick, Droplet, TrendingDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CaloriesChart from "@/components/dashboard/CaloriesChart";
 import MealCard from "@/components/meals/MealCard";
+import PeriodSelector, { Period } from "@/components/shared/PeriodSelector";
+import CheckInModal from "@/components/shared/CheckInModal";
+import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const tabs = [
@@ -101,10 +104,10 @@ const mealPlan = {
 };
 
 const checkIns = [
-  { date: "06/12/2024", weight: 70.8, waist: 82, notes: "Sentindo-se bem, energia alta" },
-  { date: "29/11/2024", weight: 71.2, waist: 83, notes: "Semana difícil, alguns deslizes" },
-  { date: "22/11/2024", weight: 71.5, waist: 83.5, notes: "Mantendo a dieta" },
-  { date: "15/11/2024", weight: 71.8, waist: 84, notes: "Início do acompanhamento" },
+  { date: "06/12/2024", weight: 70.8, waist: 82, hip: 98, abdomen: 84, chest: 95, bodyFat: 18.5, notes: "Sentindo-se bem, energia alta" },
+  { date: "29/11/2024", weight: 71.2, waist: 83, hip: 98.5, abdomen: 85, chest: 95, bodyFat: 19.2, notes: "Semana difícil, alguns deslizes" },
+  { date: "22/11/2024", weight: 71.5, waist: 83.5, hip: 99, abdomen: 85.5, chest: 95, bodyFat: 19.5, notes: "Mantendo a dieta" },
+  { date: "15/11/2024", weight: 71.8, waist: 84, hip: 99, abdomen: 86, chest: 95.5, bodyFat: 20.0, notes: "Início do acompanhamento" },
 ];
 
 // Report chart data
@@ -123,16 +126,6 @@ const summaryCards = [
   { label: "Carbo médio por dia", value: "195g", icon: Wheat, color: "text-green-600", bgColor: "bg-green-50" },
   { label: "Gordura média por dia", value: "36g", icon: Droplet, color: "text-blue-600", bgColor: "bg-blue-50" },
   { label: "Déficit calórico total", value: "-8129kcal", icon: TrendingDown, color: "text-purple-600", bgColor: "bg-purple-50" },
-];
-
-type Period = "24H" | "3D" | "7D" | "1M" | "custom";
-
-const periods: { value: Period; label: string }[] = [
-  { value: "24H", label: "24H" },
-  { value: "3D", label: "3D" },
-  { value: "7D", label: "7D" },
-  { value: "1M", label: "1M" },
-  { value: "custom", label: "Personalizado" },
 ];
 
 const PatientProfile = () => {
@@ -202,6 +195,7 @@ const PatientProfile = () => {
               carbs={{ value: 242, goal: 280 }}
               protein={{ value: 104, goal: 120 }}
               fat={{ value: 65, goal: 70 }}
+              showGoals={true}
             />
 
             {/* Meals */}
@@ -296,29 +290,7 @@ const PatientProfile = () => {
 
         {activeTab === "checkins" && (
           <div className="space-y-4">
-            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <p className="text-sm text-amber-800 font-poppins">
-                ⚠️ Já se passaram 6 dias desde o último check-in deste paciente. Considere atualizar peso, medidas ou ajustar o plano.
-              </p>
-            </div>
-            {checkIns.map((checkIn, index) => (
-              <div key={index} className="bg-card rounded-xl border border-border p-5 shadow-card">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-semibold text-foreground font-poppins">{checkIn.date}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div className="p-3 bg-background rounded-lg">
-                    <p className="text-xs text-muted-foreground font-poppins">Peso</p>
-                    <p className="font-semibold text-foreground font-poppins">{checkIn.weight} kg</p>
-                  </div>
-                  <div className="p-3 bg-background rounded-lg">
-                    <p className="text-xs text-muted-foreground font-poppins">Cintura</p>
-                    <p className="font-semibold text-foreground font-poppins">{checkIn.waist} cm</p>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground font-poppins">{checkIn.notes}</p>
-              </div>
-            ))}
+            <CheckInsTab />
           </div>
         )}
       </div>
@@ -326,9 +298,79 @@ const PatientProfile = () => {
   );
 };
 
+// Check-ins Tab Component
+const CheckInsTab = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSaveCheckIn = (data: any) => {
+    console.log("Check-in saved:", data);
+    // In a real app, this would save to the database
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-foreground font-poppins">Histórico de Check-ins</h3>
+        <Button onClick={() => setIsModalOpen(true)} className="font-poppins">
+          <Plus className="w-4 h-4 mr-2" />
+          Adicionar Check-in
+        </Button>
+      </div>
+
+      <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+        <p className="text-sm text-amber-800 font-poppins">
+          ⚠️ Já se passaram 6 dias desde o último check-in deste paciente. Considere atualizar peso, medidas ou ajustar o plano.
+        </p>
+      </div>
+
+      {checkIns.map((checkIn, index) => (
+        <div key={index} className="bg-card rounded-xl border border-border p-5 shadow-card">
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-semibold text-foreground font-poppins">{checkIn.date}</span>
+            {index === 0 && (
+              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary font-poppins">
+                Mais recente
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+            <div className="p-3 bg-background rounded-lg">
+              <p className="text-xs text-muted-foreground font-poppins">Peso</p>
+              <p className="font-semibold text-foreground font-poppins">{checkIn.weight} kg</p>
+            </div>
+            <div className="p-3 bg-background rounded-lg">
+              <p className="text-xs text-muted-foreground font-poppins">Cintura</p>
+              <p className="font-semibold text-foreground font-poppins">{checkIn.waist} cm</p>
+            </div>
+            <div className="p-3 bg-background rounded-lg">
+              <p className="text-xs text-muted-foreground font-poppins">Quadril</p>
+              <p className="font-semibold text-foreground font-poppins">{checkIn.hip} cm</p>
+            </div>
+            <div className="p-3 bg-background rounded-lg">
+              <p className="text-xs text-muted-foreground font-poppins">% Gordura</p>
+              <p className="font-semibold text-foreground font-poppins">{checkIn.bodyFat}%</p>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground font-poppins">{checkIn.notes}</p>
+        </div>
+      ))}
+
+      <CheckInModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveCheckIn}
+      />
+    </>
+  );
+};
+
 // Evolution Charts Component
 const EvolutionCharts = () => {
-  const [period, setPeriod] = useState<"7D" | "30D" | "90D" | "1Y" | "custom">("30D");
+  const [period, setPeriod] = useState<Period>("30D");
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
 
   const caloriesData = [
     { date: "01/11", consumed: 2100, goal: 2200 },
@@ -339,29 +381,41 @@ const EvolutionCharts = () => {
     { date: "06/12", consumed: 1970, goal: 2200 },
   ];
 
+  const evolutionPeriods: { value: Period; label: string }[] = [
+    { value: "7D", label: "7D" },
+    { value: "30D", label: "30D" },
+    { value: "90D", label: "90D" },
+    { value: "custom", label: "Personalizado" },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Period Filter */}
-      <div className="flex gap-2 bg-card rounded-lg border border-border p-1.5 w-fit">
-        {["7D", "30D", "90D", "1Y", "custom"].map((p) => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p as typeof period)}
-            className={cn(
-              "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 font-poppins",
-              period === p
-                ? "gradient-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {p === "custom" ? "Personalizado" : p}
-          </button>
-        ))}
-      </div>
+      <PeriodSelector
+        period={period}
+        onPeriodChange={setPeriod}
+        customDateRange={customDateRange}
+        onCustomDateChange={setCustomDateRange}
+        periods={evolutionPeriods}
+      />
 
       {/* Weight Chart */}
       <div className="bg-card rounded-xl border border-border p-6 shadow-card">
         <h3 className="font-semibold text-foreground font-poppins mb-4">Evolução do Peso</h3>
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="p-4 bg-background rounded-lg text-center">
+            <p className="text-xs text-muted-foreground font-poppins">Peso inicial</p>
+            <p className="text-xl font-bold text-foreground font-poppins">72.5 kg</p>
+          </div>
+          <div className="p-4 bg-background rounded-lg text-center">
+            <p className="text-xs text-muted-foreground font-poppins">Peso atual</p>
+            <p className="text-xl font-bold text-primary font-poppins">70.8 kg</p>
+          </div>
+          <div className="p-4 bg-background rounded-lg text-center">
+            <p className="text-xs text-muted-foreground font-poppins">Perdido</p>
+            <p className="text-xl font-bold text-primary font-poppins">-1.7 kg</p>
+          </div>
+        </div>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={weightData}>
@@ -410,9 +464,13 @@ const EvolutionCharts = () => {
   );
 };
 
-// Nutritional Report Component (moved from Reports page)
+// Nutritional Report Component
 const NutritionalReport = () => {
   const [period, setPeriod] = useState<Period>("7D");
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
   const [visibleLines, setVisibleLines] = useState({
     calories: true,
     burned: true,
@@ -433,22 +491,12 @@ const NutritionalReport = () => {
   return (
     <div className="space-y-6">
       {/* Period Filter */}
-      <div className="flex gap-2 bg-card rounded-lg border border-border p-1.5 w-fit">
-        {periods.map((p) => (
-          <button
-            key={p.value}
-            onClick={() => setPeriod(p.value)}
-            className={cn(
-              "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 font-poppins",
-              period === p.value
-                ? "gradient-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+      <PeriodSelector
+        period={period}
+        onPeriodChange={setPeriod}
+        customDateRange={customDateRange}
+        onCustomDateChange={setCustomDateRange}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
