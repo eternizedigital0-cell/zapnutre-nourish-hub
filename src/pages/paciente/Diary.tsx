@@ -55,13 +55,14 @@ const PatientDiary = () => {
         <p className="text-muted-foreground font-poppins capitalize">{today}</p>
       </div>
 
-      {/* Calories Summary */}
+      {/* Calories Summary with Goals */}
       <CaloriesChart
         consumed={1450}
         goal={2200}
         carbs={{ value: 165, goal: 280 }}
         protein={{ value: 78, goal: 120 }}
         fat={{ value: 42, goal: 70 }}
+        showGoals={true}
       />
 
       {/* Meals */}

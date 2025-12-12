@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { cn } from "@/lib/utils";
-
-type Period = "7D" | "30D" | "90D" | "1Y" | "custom";
+import PeriodSelector, { Period } from "@/components/shared/PeriodSelector";
 
 const weightData = [
   { date: "01/11", weight: 72.5 },
@@ -22,8 +20,19 @@ const caloriesData = [
   { date: "06/12", consumed: 1970, goal: 2200 },
 ];
 
+const evolutionPeriods: { value: Period; label: string }[] = [
+  { value: "7D", label: "7D" },
+  { value: "30D", label: "30D" },
+  { value: "90D", label: "90D" },
+  { value: "custom", label: "Personalizado" },
+];
+
 const PatientEvolution = () => {
   const [period, setPeriod] = useState<Period>("30D");
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -34,22 +43,13 @@ const PatientEvolution = () => {
       </div>
 
       {/* Period Filter */}
-      <div className="flex gap-2 bg-card rounded-lg border border-border p-1.5 w-fit">
-        {["7D", "30D", "90D", "1Y", "custom"].map((p) => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p as Period)}
-            className={cn(
-              "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 font-poppins",
-              period === p
-                ? "gradient-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {p === "custom" ? "Personalizado" : p}
-          </button>
-        ))}
-      </div>
+      <PeriodSelector
+        period={period}
+        onPeriodChange={setPeriod}
+        customDateRange={customDateRange}
+        onCustomDateChange={setCustomDateRange}
+        periods={evolutionPeriods}
+      />
 
       {/* Weight Chart */}
       <div className="bg-card rounded-xl border border-border p-6 shadow-card">

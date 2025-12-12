@@ -1,8 +1,18 @@
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
-type Period = "weekly" | "monthly" | "30days";
+type Period = "weekly" | "monthly" | "30days" | "custom";
 
 const weeklyData = [
   { name: "Sem 1", engagement: 65 },
@@ -31,10 +41,23 @@ const periods: { value: Period; label: string }[] = [
   { value: "weekly", label: "Semanal" },
   { value: "30days", label: "30 dias" },
   { value: "monthly", label: "Mensal" },
+  { value: "custom", label: "Personalizado" },
 ];
 
 const EngagementChart = () => {
   const [period, setPeriod] = useState<Period>("weekly");
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
+
+  const handlePeriodClick = (p: Period) => {
+    setPeriod(p);
+    if (p === "custom") {
+      setIsCalendarOpen(true);
+    }
+  };
 
   const data = period === "weekly" ? weeklyData : period === "monthly" ? monthlyData : thirtyDaysData;
   const lastValue = data[data.length - 1].engagement;
@@ -42,23 +65,70 @@ const EngagementChart = () => {
 
   return (
     <div className="bg-card rounded-xl border border-border p-6 shadow-card">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h3 className="font-semibold text-foreground font-poppins">Engajamento</h3>
-        <div className="flex gap-1 bg-background rounded-lg p-1">
-          {periods.map((p) => (
-            <button
-              key={p.value}
-              onClick={() => setPeriod(p.value)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 font-poppins",
-                period === p.value
-                  ? "gradient-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1 bg-background rounded-lg p-1 flex-wrap">
+            {periods.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => handlePeriodClick(p.value)}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 font-poppins whitespace-nowrap",
+                  period === p.value
+                    ? "gradient-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {period === "custom" && (
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "justify-start text-left font-normal font-poppins text-xs",
+                    !customDateRange?.from && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-3 w-3" />
+                  {customDateRange?.from ? (
+                    customDateRange.to ? (
+                      <>
+                        {format(customDateRange.from, "dd/MM", { locale: ptBR })} -{" "}
+                        {format(customDateRange.to, "dd/MM", { locale: ptBR })}
+                      </>
+                    ) : (
+                      format(customDateRange.from, "dd/MM/yyyy", { locale: ptBR })
+                    )
+                  ) : (
+                    <span>Período</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-card z-50" align="end">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={customDateRange?.from}
+                  selected={{ from: customDateRange?.from, to: customDateRange?.to }}
+                  onSelect={(range) => {
+                    setCustomDateRange({ from: range?.from, to: range?.to });
+                    if (range?.from && range?.to) {
+                      setIsCalendarOpen(false);
+                    }
+                  }}
+                  numberOfMonths={2}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       </div>
 
