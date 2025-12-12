@@ -65,7 +65,7 @@ const PatientPlan = () => {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground font-poppins">Meu Plano Alimentar</h1>
+        <h1 className="text-2xl font-bold text-foreground font-poppins">Plano Alimentar</h1>
         <p className="text-muted-foreground font-poppins">Seu plano personalizado</p>
       </div>
 
